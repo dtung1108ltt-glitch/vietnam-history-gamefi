@@ -1,0 +1,40 @@
+{
+  "note": "Input chuẩn hoá metadata NFT từ Artist 1: tên / rarity / ảnh mỗi faction. Deploy script đăng ký lên catalog on-chain từ file này.",
+  "factions": [
+    {
+      "faction_id": 1,
+      "name": "Nhà Lý",
+      "rarity": "common",
+      "image": "https://assets.vnhistory.gamefi/factions/ly.png",
+      "description": "Faction thời Lý - kỷ nguyên dựng kinh thành Thăng Long."
+    },
+    {
+      "faction_id": 2,
+      "name": "Nhà Trần",
+      "rarity": "rare",
+      "image": "https://assets.vnhistory.gamefi/factions/tran.png",
+      "description": "Faction thời Trần - ba lần kháng chiến chống Nguyên Mông."
+    },
+    {
+      "faction_id": 3,
+      "name": "Nhà Lê",
+      "rarity": "rare",
+      "image": "https://assets.vnhistory.gamefi/factions/le.png",
+      "description": "Faction thời Lê - khởi nghĩa Lam Sơn thống nhất giang sơn."
+    },
+    {
+      "faction_id": 4,
+      "name": "Tây Sơn",
+      "rarity": "epic",
+      "image": "https://assets.vnhistory.gamefi/factions/tayson.png",
+      "description": "Faction Tây Sơn - thần tốc đại phá quân Thanh."
+    },
+    {
+      "faction_id": 5,
+      "name": "Nhà Nguyễn",
+      "rarity": "legendary",
+      "image": "https://assets.vnhistory.gamefi/factions/nguyen.png",
+      "description": "Faction thời Nguyễn - triều đại phong kiến cuối cùng."
+    }
+  ]
+}
