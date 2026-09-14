@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/providers.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/factionselect.tsx","./src/components/rewardpanel.tsx","./src/components/walletbar.tsx","./src/hooks/usewallet.ts","./src/services/api.ts","./src/services/sui.ts"],"version":"6.0.3"}
