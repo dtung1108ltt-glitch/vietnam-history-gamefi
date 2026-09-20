@@ -165,7 +165,7 @@ SOLANA_PROGRAM_ID=
 cd backend
 python -m pip install -r requirements.txt
 python -m pytest -q
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
 ```bash
