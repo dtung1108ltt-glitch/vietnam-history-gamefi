@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Request
 
 from app.core.config import get_settings
 from app.core.store import store
-from app.schemas import FactionOut, FactionRegisterRequest, PlayerOut
+from app.schemas import FactionOut, FactionRegisterRequest, PlayerOut, SelectFactionRequest
 
 router = APIRouter(tags=["faction"])
 
@@ -31,6 +31,39 @@ def get_player(wallet: str, chain: str | None = None):
         username=player.username,
         faction_id=player.faction_id,
         nft_object_id=player.nft_object_id,
+        level=player.level,
+        rice=player.rice,
+        gold=player.gold,
+        morale=player.morale,
+        is_guest=player.is_guest,
+    )
+
+
+@router.post("/players/{wallet}/faction/select", response_model=PlayerOut)
+def select_faction_f2p(wallet: str, body: SelectFactionRequest):
+    """Chọn Faction cho người chơi F2P / Guest mà không bắt buộc phải mint NFT (Section 13)."""
+    player = store.find_player_any_chain(wallet)
+    if player is None:
+        # Nếu là guest session chưa lưu, tự tạo
+        player = store.get_or_create_player("sui", wallet)
+
+    player.faction_id = body.faction_id
+    # Tự động gán starting advisor của faction cho người chơi
+    starting_adv = store.get_starting_advisor_for_faction(body.faction_id)
+    if starting_adv:
+        store.equip_advisor(wallet, starting_adv)
+
+    return PlayerOut(
+        wallet=player.wallet,
+        chain=player.chain,
+        username=player.username,
+        faction_id=player.faction_id,
+        nft_object_id=player.nft_object_id,
+        level=player.level,
+        rice=player.rice,
+        gold=player.gold,
+        morale=player.morale,
+        is_guest=player.is_guest,
     )
 
 
@@ -45,9 +78,6 @@ def register_player_faction(
     if player is None:
         raise HTTPException(status_code=404, detail="Player chưa tồn tại — đăng nhập ví trước")
 
-    # Luôn resolve adapter theo chain đã lưu của Player, KHÔNG theo tham số
-    # client tự gửi — tránh trường hợp client cố tình khai man chain để né
-    # verify (an toàn theo Section 32: không tin dữ liệu ownership từ frontend).
     adapter = request.app.state.resolver.get(player.chain)
 
     tx = adapter.get_transaction(body.tx_digest)
@@ -58,10 +88,21 @@ def register_player_faction(
 
     player.faction_id = body.faction_id
     player.nft_object_id = body.nft_object_id
+    
+    # Gán starting advisor
+    starting_adv = store.get_starting_advisor_for_faction(body.faction_id)
+    if starting_adv:
+        store.equip_advisor(wallet, starting_adv)
+
     return PlayerOut(
         wallet=player.wallet,
         chain=player.chain,
         username=player.username,
         faction_id=player.faction_id,
         nft_object_id=player.nft_object_id,
+        level=player.level,
+        rice=player.rice,
+        gold=player.gold,
+        morale=player.morale,
+        is_guest=player.is_guest,
     )

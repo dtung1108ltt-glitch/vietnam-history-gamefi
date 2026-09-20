@@ -1,12 +1,15 @@
-import React from 'react';
-import { Faction, Player } from '../../types';
-import { Swords, Shield, Zap, Users, Trophy, Play, CheckCircle2, RefreshCw, ChevronRight, Award, Compass } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Army, Faction, Player } from '../../types';
+import { Swords, Users, Play, CheckCircle2, RefreshCw, ChevronRight, Compass, Crown, ShoppingBag, Shield, Flame } from 'lucide-react';
+import { apiService } from '../../services/api';
 
 interface PreGameLobbyProps {
   player: Player;
   faction: Faction;
   onChangeFaction: () => void;
   onEnterBattle: () => void;
+  onOpenAdvisorCouncil: () => void;
+  onOpenMarketplace: () => void;
   onPlayDrum: () => void;
   onPlayGong: () => void;
   onPlaySword: () => void;
@@ -17,10 +20,22 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
   faction,
   onChangeFaction,
   onEnterBattle,
+  onOpenAdvisorCouncil,
+  onOpenMarketplace,
   onPlayDrum,
   onPlayGong,
   onPlaySword,
 }) => {
+  const [army, setArmy] = useState<Army | null>(null);
+
+  useEffect(() => {
+    async function loadArmy() {
+      const a = await apiService.getPlayerArmy(player.wallet);
+      setArmy(a);
+    }
+    loadArmy();
+  }, [player.wallet]);
+
   const handleLaunch = () => {
     onPlaySword();
     onPlayGong();
@@ -40,7 +55,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           Tổng Hành Dinh Tướng Quân
         </h2>
         <p className="text-sm text-slate-300 mt-2 max-w-xl mx-auto">
-          Binh mã đã tề tựu dưới cờ lệnh triều đại {faction.name}. Hãy kiểm tra binh lực và sẵn sàng xuất quân vào trận địa.
+          Binh mã đã tề tựu dưới cờ lệnh triều đại {faction.name}. Hãy kiểm tra binh lực, hội ý quân sư và sẵn sàng xuất quân vào trận địa.
         </p>
       </div>
 
@@ -51,9 +66,7 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
           <div>
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-imperial-darkred to-imperial-crimson p-1 border-2 border-imperial-gold shadow-lg flex items-center justify-center">
-                <span className="font-cinzel text-imperial-gold font-black text-2xl">
-                  {faction.coat_of_arms.charAt(0)}
-                </span>
+                <Crown className="w-8 h-8 text-imperial-gold" />
               </div>
               <div>
                 <span className="text-[10px] uppercase font-bold text-imperial-gold tracking-widest">
@@ -70,41 +83,55 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
 
             <div className="space-y-3 pt-3 border-t border-imperial-border/80 text-xs">
               <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">Triều đại quy phục:</span>
+                <span className="text-slate-400">Triều đại phụng sự:</span>
                 <span className="font-bold text-amber-300 font-cinzel">{faction.name}</span>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">Huy hiệu Faction NFT:</span>
-                <span className="font-bold uppercase text-emerald-400">Đã xác minh</span>
+                <span className="text-slate-400">Chế độ trải nghiệm:</span>
+                <span className="font-bold uppercase text-emerald-400">
+                  {player.is_guest ? 'Miễn Phí (F2P)' : 'Có Nối Ví'}
+                </span>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">Mạng bảo chứng:</span>
-                <span className="font-mono uppercase text-cyan-300">{player.chain}</span>
-              </div>
-              <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">Quân hàm sơ khởi:</span>
+                <span className="text-slate-400">Quân hàm thống soái:</span>
                 <span className="font-bold text-white">Cấp {player.level} (Đô Đốc)</span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-400">Lương thảo & Ngân khố:</span>
+                <span className="font-bold text-amber-300 font-mono">
+                  🌾 {player.rice || 5000} &bull; 🪙 {player.gold || 10000}
+                </span>
               </div>
             </div>
           </div>
 
-          <button
-            onClick={() => { onPlayDrum(); onChangeFaction(); }}
-            className="mt-6 w-full py-2.5 px-3 rounded-xl bg-black/40 hover:bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center space-x-2 transition-all cursor-pointer"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Đổi Triều Đại Khác</span>
-          </button>
+          <div className="space-y-2 mt-6">
+            <button
+              onClick={() => { onPlayDrum(); onOpenAdvisorCouncil(); }}
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 text-imperial-lightgold text-xs font-bold flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-md"
+            >
+              <Crown className="w-4 h-4 text-imperial-gold" />
+              <span>Hội Đồng Quân Sư</span>
+            </button>
+
+            <button
+              onClick={() => { onPlayDrum(); onChangeFaction(); }}
+              className="w-full py-2 px-3 rounded-xl bg-black/40 hover:bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center space-x-2 transition-all cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Đổi Triều Đại Khác</span>
+            </button>
+          </div>
         </div>
 
-        {/* Center Column: Army Stats & Military Units */}
+        {/* Center Column: Army Stats & Equipped Advisor */}
         <div className="bg-imperial-lacquer/90 border border-imperial-border rounded-2xl p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
                 <Users className="w-5 h-5 text-imperial-gold" />
                 <h3 className="font-cinzel text-base font-bold text-white">
-                  Binh Lực Cơ Bản (Army State)
+                  Binh Lực & Tướng Cố Vấn
                 </h3>
               </div>
               <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
@@ -112,14 +139,14 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
               </span>
             </div>
 
-            {/* Power Score Box */}
+            {/* Combat Power */}
             <div className="bg-gradient-to-r from-red-950/50 to-amber-950/40 border border-imperial-gold/40 rounded-xl p-4 mb-4 flex items-center justify-between">
               <div>
                 <div className="text-[11px] uppercase tracking-wider text-slate-400">
-                  Lực Lượng Tác Chiến (Combat Score)
+                  Lực Lượng Tác Chiến (Combat Power)
                 </div>
                 <div className="text-3xl font-black font-mono text-imperial-lightgold mt-0.5">
-                  {player.base_power} <span className="text-sm font-normal text-amber-300">Vạn Quân</span>
+                  {army?.total_power || player.base_power} <span className="text-sm font-normal text-amber-300">Điểm</span>
                 </div>
               </div>
               <div className="w-10 h-10 rounded-full bg-imperial-darkred/80 border border-imperial-gold/60 flex items-center justify-center text-imperial-gold">
@@ -127,67 +154,83 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
               </div>
             </div>
 
-            {/* Units breakdown */}
-            <div className="space-y-2.5 text-xs text-slate-300">
-              <div className="bg-black/30 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
-                <span>Binh Chủng Trấn Phái:</span>
-                <span className="font-semibold text-imperial-lightgold">{faction.special_unit}</span>
+            {/* Equipped Advisor Snapshot */}
+            <div className="bg-amber-950/30 border border-amber-600/40 rounded-xl p-3 mb-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-bold text-amber-300 uppercase flex items-center gap-1">
+                  <Crown className="w-3.5 h-3.5" />
+                  <span>Tướng Cố Vấn Chỉ Huy:</span>
+                </span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 border border-amber-500/40">
+                  Kích Hoạt
+                </span>
               </div>
-              <div className="bg-black/30 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
-                <span>Hệ Số Tấn Công:</span>
-                <span className="font-bold text-red-400">+{faction.attack_bonus}% Sát Thương</span>
+              <div className="text-sm font-bold text-white font-cinzel">
+                {army?.equipped_advisor_name || 'Đã phân bổ tướng bản triều'}
               </div>
-              <div className="bg-black/30 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
-                <span>Hệ Số Phòng Thủ:</span>
-                <span className="font-bold text-blue-400">+{faction.defense_bonus}% Giảm Thương</span>
+            </div>
+
+            {/* Troops Breakdown */}
+            <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
+              <div className="bg-black/30 p-2 rounded-lg border border-slate-800 flex justify-between">
+                <span>Trường Thương:</span>
+                <span className="font-mono font-bold text-white">{army?.spearmen_count || 100}</span>
               </div>
-              <div className="bg-black/30 p-2.5 rounded-lg border border-slate-800 flex justify-between items-center">
-                <span>Hệ Số Di Chuyển:</span>
-                <span className="font-bold text-amber-400">+{faction.movement_bonus}% Hành Quân</span>
+              <div className="bg-black/30 p-2 rounded-lg border border-slate-800 flex justify-between">
+                <span>Cung Thủ:</span>
+                <span className="font-mono font-bold text-white">{army?.archers_count || 60}</span>
+              </div>
+              <div className="bg-black/30 p-2 rounded-lg border border-slate-800 flex justify-between">
+                <span>Kỵ Binh:</span>
+                <span className="font-mono font-bold text-white">{army?.cavalry_count || 30}</span>
+              </div>
+              <div className="bg-black/30 p-2 rounded-lg border border-slate-800 flex justify-between">
+                <span>Chiến Tượng:</span>
+                <span className="font-mono font-bold text-white">{army?.elephants_count || 5}</span>
               </div>
             </div>
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 text-center">
-            Theo nguyên tắc kiến trúc: NFT bảo chứng identity, kỹ năng chỉ huy quyết định thắng bại.
+            Chiến thuật & Tướng Cố Vấn quyết định thắng bại, không phải số tiền chi trên blockchain.
           </div>
         </div>
 
-        {/* Right Column: Battle Modes & Action */}
+        {/* Right Column: Battle Modes & Actions */}
         <div className="bg-gradient-to-b from-imperial-darkred/40 via-imperial-lacquer to-imperial-obsidian border border-imperial-gold/60 rounded-2xl p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Compass className="w-5 h-5 text-amber-400" />
               <h3 className="font-cinzel text-base font-bold text-white">
-                Mục Tiêu Chiến Trận (MVP Scope)
+                Mục Tiêu Chiến Dịch
               </h3>
             </div>
 
             <div className="space-y-3 mb-6">
               <div className="p-3 rounded-xl bg-black/40 border border-slate-800 hover:border-imperial-gold/40 transition-colors">
                 <div className="flex items-center justify-between text-xs font-bold text-white">
-                  <span>Trận 1: Chiến Dịch Bạch Đằng Giang</span>
-                  <span className="text-[10px] text-emerald-400 font-mono">Mở</span>
+                  <span>Trận 1: Đại Chiến Bạch Đằng Giang</span>
+                  <span className="text-[10px] text-emerald-400 font-mono">Sẵn sàng</span>
                 </div>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Bày trận cọc ngầm, dụ địch theo con nước triều, tiêu diệt chiến thuyền ngoại xâm.
+                  Cắm cọc gỗ bọc sắt, phục kích thủy quân Nguyên Mông khi triều rút.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-black/40 border border-slate-800 opacity-75">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                  <span>Trận 2: Phá Vây Rạch Gầm - Xoài Mút</span>
-                  <span className="text-[10px] text-amber-400 font-mono">Chờ Lệnh</span>
+              <div className="p-3 rounded-xl bg-black/40 border border-slate-800 hover:border-imperial-gold/40 transition-colors">
+                <div className="flex items-center justify-between text-xs font-bold text-white">
+                  <span>Trận 2: Rạch Gầm – Xoài Mút</span>
+                  <span className="text-[10px] text-amber-400 font-mono">Chiến dịch</span>
                 </div>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Tây Sơn thủy kỵ phục kích liên hoàn, hỏa hổ quét sạch quân địch.
+                  Đại phá liên quân Xiêm La trên sông Tiền bằng chiến thuật hỏa công.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Launch Action */}
-          <div>
+          {/* Launch & Marketplace Actions */}
+          <div className="space-y-3">
             <button
               onClick={handleLaunch}
               className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-imperial-crimson via-red-600 to-imperial-darkred hover:from-red-600 hover:to-imperial-crimson text-imperial-lightgold font-cinzel font-black text-base uppercase tracking-wider border-2 border-imperial-gold shadow-2xl shadow-red-950/80 hover:scale-[1.02] transition-all flex items-center justify-center space-x-3 cursor-pointer"
@@ -196,9 +239,14 @@ export const PreGameLobby: React.FC<PreGameLobbyProps> = ({
               <span>Xuất Quân Vào Chiến Trường</span>
               <ChevronRight className="w-5 h-5" />
             </button>
-            <p className="text-center text-[10px] text-slate-400 mt-2">
-              Khởi động bàn cờ chiến thuật & vòng quay tác chiến off-chain
-            </p>
+
+            <button
+              onClick={() => { onPlayDrum(); onOpenMarketplace(); }}
+              className="w-full py-2.5 px-4 rounded-xl bg-purple-950/50 hover:bg-purple-900/40 text-purple-200 font-semibold text-xs border border-purple-600/50 flex items-center justify-center space-x-2 transition-all cursor-pointer"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Mở Chợ Tướng Cố Vấn (Marketplace)</span>
+            </button>
           </div>
 
         </div>

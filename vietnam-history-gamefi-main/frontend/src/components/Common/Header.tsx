@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Volume2, VolumeX, Radio, Wallet, LogOut, Swords } from 'lucide-react';
+import { Volume2, VolumeX, Radio, Wallet, LogOut, Crown, ShoppingBag } from 'lucide-react';
 import { ChainType, Player } from '../../types';
 
 interface HeaderProps {
@@ -12,6 +12,8 @@ interface HeaderProps {
   onToggleMute: () => void;
   onPlayGong: () => void;
   serverOnline?: boolean;
+  onOpenAdvisorCouncil?: () => void;
+  onOpenMarketplace?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,6 +26,8 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleMute,
   onPlayGong,
   serverOnline = true,
+  onOpenAdvisorCouncil,
+  onOpenMarketplace,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-imperial-obsidian/90 backdrop-blur-md border-b border-imperial-border/80 px-4 lg:px-8 py-3 transition-all">
@@ -40,11 +44,11 @@ export const Header: React.FC<HeaderProps> = ({
                 Hào Khí Đại Việt
               </h1>
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-imperial-darkred/60 text-imperial-lightgold border border-imperial-crimson/50 font-semibold tracking-wide">
-                MVP
+                Gameplay First
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              Chiến thuật lịch sử &bull; GameFi Web3
+              Lịch sử là Trò chơi &bull; Blockchain là Thị trường
             </p>
           </div>
         </div>
@@ -88,8 +92,28 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Right Actions: Sound & Wallet */}
+        {/* Right Actions: Advisor, Market, Sound, Wallet */}
         <div className="flex items-center space-x-2 sm:space-x-3">
+          {onOpenAdvisorCouncil && (
+            <button
+              onClick={onOpenAdvisorCouncil}
+              className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/50 border border-amber-600/40 text-amber-200 text-xs font-semibold cursor-pointer"
+            >
+              <Crown className="w-3.5 h-3.5 text-imperial-lightgold" />
+              <span>Quân Sư</span>
+            </button>
+          )}
+
+          {onOpenMarketplace && (
+            <button
+              onClick={onOpenMarketplace}
+              className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-purple-950/40 hover:bg-purple-900/50 border border-purple-600/40 text-purple-200 text-xs font-semibold cursor-pointer"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-purple-300" />
+              <span>Chợ Tướng</span>
+            </button>
+          )}
+
           {/* Sound Toggle */}
           <button
             onClick={onToggleMute}
@@ -100,7 +124,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {/* Wallet Action */}
-          {player ? (
+          {player && !player.is_guest ? (
             <div className="flex items-center space-x-2">
               <div className="bg-imperial-lacquer/90 border border-imperial-gold/40 rounded-lg px-3 py-1.5 flex items-center space-x-2 shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
@@ -129,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-imperial-crimson to-imperial-darkred hover:from-red-600 hover:to-imperial-crimson text-imperial-lightgold border border-imperial-gold/60 font-semibold text-xs sm:text-sm shadow-md hover:shadow-red-900/40 transition-all cursor-pointer"
             >
               <Wallet className="w-4 h-4" />
-              <span>Kết Nối Ví</span>
+              <span>{player?.is_guest ? 'Nối Ví (Tùy Chọn)' : 'Kết Nối Ví'}</span>
             </button>
           )}
         </div>

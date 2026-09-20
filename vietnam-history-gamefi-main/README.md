@@ -1,8 +1,10 @@
-# Vietnam History GameFi
+# Hào Khí Đại Việt — hướng tới DeFi minh bạch
 
-Game chiến thuật lấy **lịch sử Việt Nam** làm trục nội dung, kết hợp GameFi ở mức vừa đủ để chứng minh giá trị của blockchain: gameplay xử lý off-chain để nhanh và dễ cân bằng, blockchain chỉ đảm nhiệm quyền sở hữu tài sản (Faction NFT) và reward/achievement có thể xác minh on-chain. Đây là một **vertical slice MVP**, không phải bản phát hành đầy đủ.
+Sản phẩm hướng tới **thiết kế tài chính phi tập trung minh bạch, an toàn và dễ tiếp cận**: thanh toán, tiết kiệm, lending, DEX, treasury dashboard, DAO tooling. Lớp lịch sử Việt Nam và Faction NFT giữ bản sắc / định danh; lớp on-chain phải công khai số liệu, không custody khóa, và dùng được bằng tiếng Việt trước khi ký.
 
-> Trạng thái repo hiện tại: **đang phát triển**. README này mô tả cả phần đã chạy được và phần còn thiếu so với thiết kế, để bất kỳ ai đọc cũng biết chính xác demo được tới đâu. Chi tiết đầy đủ (bug, gap, mức ưu tiên) xem [`docs/architecture-review.md`](docs/architecture-review.md).
+MVP hiện tại vẫn là vertical slice GameFi (ví → NFT → chiến dịch). Màn **Kinh tế on-chain** là prototype UI của sáu module DeFi; adapter Sui/Solana hiện có sẽ được nối khi từng module lên chain.
+
+> Trạng thái repo hiện tại: **đang phát triển**. README mô tả phần đã chạy và phần còn thiếu. Hướng DeFi: [`docs/defi.md`](docs/defi.md).
 
 ## 1. Game là gì
 
@@ -203,12 +205,13 @@ Danh sách đầy đủ (kèm mức ưu tiên P0/P1/P2 và khuyến nghị thứ
 ### Roadmap tiếp theo
 1. Vá 2 lỗi P0 dễ nhất: exception handling cho reward Solana + bug nhỏ trong `solana_adapter.py`.
 2. Thay lớp ví mock ở frontend bằng SDK ví thật (`@mysten/dapp-kit`, `@solana/wallet-adapter-*`).
-3. Xây domain Battle: schema DB (`armies`, `battles`), `battle_engine` service, API `POST /battles`, `GET /leaderboard`, UI tương ứng.
-4. Nối backend vào PostgreSQL thật theo `database/schema.sql`.
-5. Deploy chương trình Anchor lên Solana Devnet, hoàn thiện `achievement.move`.
+3. Triển khai DeFi theo thứ tự an toàn: **thanh toán** (chuyển khoản + chứng từ) → **treasury dashboard** (đọc quỹ công khai) → **tiết kiệm** → **DEX** → **lending** → **DAO tooling**.
+4. Xây domain Battle: schema DB (`armies`, `battles`), `battle_engine` service, API `POST /battles`, `GET /leaderboard`, UI tương ứng.
+5. Nối backend vào PostgreSQL thật theo `database/schema.sql`.
+6. Deploy chương trình Anchor lên Solana Devnet, hoàn thiện `achievement.move`.
 
 ### Tài liệu khác
 - `docs/architecture.md`: modular monolith và domain boundary.
 - `docs/blockchain.md`: blockchain architecture và deployment notes.
 - `docs/api.md`: API hiện có.
-- `docs/architecture-review.md`: báo cáo đánh giá source code đối chiếu với thiết kế MVP (chi tiết đầy đủ).
+- `docs/defi.md`: nguyên tắc thiết kế DeFi (minh bạch, an toàn, dễ tiếp cận) và sáu module.

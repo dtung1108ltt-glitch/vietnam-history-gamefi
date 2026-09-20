@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, blockchain, faction, reward
+from app.api import advisor, army, auth, battle, blockchain, faction, leaderboard, marketplace, quest, reward
 from app.blockchain.adapter_resolver import AdapterResolver
 from app.core.config import get_settings
 from app.core.security import NonceStore
@@ -9,7 +9,7 @@ from app.core.security import NonceStore
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title=settings.app_name)
+    app = FastAPI(title="Hào Khí Đại Việt — Gameplay-First Strategy Game")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -19,12 +19,28 @@ def create_app() -> FastAPI:
     app.state.settings = settings
     app.state.resolver = AdapterResolver(settings)
     app.state.nonce_store = NonceStore(settings.nonce_ttl_seconds)
-    for router in (auth.router, faction.router, reward.router, blockchain.router):
-        app.include_router(router)
+
+    # Core Game Domain routers (100% off-chain)
+    app.include_router(auth.router)
+    app.include_router(faction.router)
+    app.include_router(advisor.router)
+    app.include_router(army.router)
+    app.include_router(battle.router)
+    app.include_router(quest.router)
+    app.include_router(leaderboard.router)
+
+    # Optional Marketplace & Blockchain routers
+    app.include_router(marketplace.router)
+    app.include_router(blockchain.router)
+    app.include_router(reward.router)
 
     @app.get("/health")
     def health() -> dict:
-        return {"status": "ok"}
+        return {
+            "status": "ok",
+            "mode": "gameplay_first",
+            "tagline": "History is the Game. Blockchain is the Marketplace.",
+        }
 
     return app
 

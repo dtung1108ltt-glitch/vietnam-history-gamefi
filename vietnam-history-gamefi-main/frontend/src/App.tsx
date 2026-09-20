@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChainType, PreGameStep, MapLocation, PlayerResources } from './types';
+import { ChainType, PreGameStep, MapLocation, PlayerResources, Player } from './types';
 import { useWallet } from './hooks/useWallet';
 import { useFaction } from './hooks/useFaction';
 import { useAudio } from './hooks/useAudio';
@@ -12,6 +12,8 @@ import { PreGameLobby } from './components/PreGame/PreGameLobby';
 import { BattleTransition } from './components/PreGame/BattleTransition';
 import { CampaignMap } from './components/Campaign/CampaignMap';
 import { BattleScreen } from './components/Battle/BattleScreen';
+import { AdvisorCouncil } from './components/Advisor/AdvisorCouncil';
+import { AdvisorMarketplace } from './components/Marketplace/AdvisorMarketplace';
 
 export const App: React.FC = () => {
   const [step, setStep] = useState<PreGameStep>('splash');
@@ -19,6 +21,9 @@ export const App: React.FC = () => {
   const [serverOnline, setServerOnline] = useState<boolean>(true);
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
   const [resources] = useState<PlayerResources>({ rice: 4500, gold: 12800, morale: 85 });
+
+  // Guest player state (F2P — no wallet required)
+  const [guestPlayer, setGuestPlayer] = useState<Player | null>(null);
 
   // Audio system
   const { isMuted, toggleMute, playDrum, playGong, playSwordShink } = useAudio();
@@ -48,6 +53,9 @@ export const App: React.FC = () => {
     mintFactionNft,
   } = useFaction(player, updatePlayerFaction);
 
+  // The effective player is either the wallet-connected player or the guest player
+  const effectivePlayer = player || guestPlayer;
+
   // Check Backend health on mount
   useEffect(() => {
     async function check() {
@@ -57,18 +65,34 @@ export const App: React.FC = () => {
     check();
   }, []);
 
-  // Xử lý khi nhấn "Tiến Vào Chiến Cuộc" ở Splash Screen
-  const handleEnterFromSplash = () => {
-    if (!isConnected) {
-      setIsWalletModalOpen(true);
-    } else if (player?.faction_id) {
-      setStep('lobby');
-    } else {
+  // F2P: Guest login — no wallet needed
+  const handleEnterF2P = async () => {
+    try {
+      const p = await apiService.guestLogin();
+      setGuestPlayer(p as unknown as Player);
+      setStep('faction_select');
+    } catch {
+      // Fallback: create a minimal guest player locally if API is down
+      setGuestPlayer({
+        wallet_address: `guest_${Date.now()}`,
+        username: 'Khách',
+        faction_id: null,
+        is_guest: true,
+        level: 1,
+        rice: 500,
+        gold: 200,
+        morale: 80,
+      } as unknown as Player);
       setStep('faction_select');
     }
   };
 
-  // Sau khi kết nối ví thành công từ modal
+  // Wallet: open connect modal
+  const handleEnterWithWallet = () => {
+    setIsWalletModalOpen(true);
+  };
+
+  // After wallet connection succeeds
   const handleConnectWallet = async (chosenChain: ChainType) => {
     const p = await connectAndAuth(chosenChain);
     if (p.faction_id) {
@@ -80,6 +104,7 @@ export const App: React.FC = () => {
 
   const handleDisconnect = () => {
     disconnect();
+    setGuestPlayer(null);
     setStep('splash');
   };
 
@@ -90,20 +115,23 @@ export const App: React.FC = () => {
       <Header
         chain={chain}
         onSelectChain={(c) => setChain(c)}
-        player={player}
+        player={effectivePlayer ?? undefined}
         onOpenWalletModal={() => setIsWalletModalOpen(true)}
         onDisconnect={handleDisconnect}
         isMuted={isMuted}
         onToggleMute={toggleMute}
         onPlayGong={playGong}
         serverOnline={serverOnline}
+        onOpenAdvisorCouncil={() => setStep('advisor_council')}
+        onOpenMarketplace={() => setStep('marketplace')}
       />
 
       {/* Main Pre-Game Flow Routing */}
       <main className="flex-1 flex flex-col">
         {step === 'splash' && (
           <SplashScreen
-            onEnter={handleEnterFromSplash}
+            onEnterF2P={handleEnterF2P}
+            onEnterWithWallet={handleEnterWithWallet}
             onSelectChain={(c) => setChain(c)}
             chain={chain}
             onPlayDrum={playDrum}
@@ -117,7 +145,7 @@ export const App: React.FC = () => {
             selectedFactionId={selectedFactionId}
             onSelectFactionId={(id) => setSelectedFactionId(id)}
             selectedFaction={selectedFaction}
-            player={player}
+            player={effectivePlayer ?? null}
             isMinting={isMinting}
             mintStatus={mintStatus}
             onMintFaction={mintFactionNft}
@@ -126,24 +154,51 @@ export const App: React.FC = () => {
             onPlayDrum={playDrum}
             onPlayGong={playGong}
             onPlaySword={playSwordShink}
+            onUpdatePlayer={(p) => {
+              if (!player) setGuestPlayer(p as unknown as Player);
+              else updatePlayerFaction(p as any);
+            }}
           />
         )}
 
-        {step === 'lobby' && player && (
+        {step === 'lobby' && effectivePlayer && (
           <PreGameLobby
-            player={player}
+            player={effectivePlayer}
             faction={selectedFaction}
             onChangeFaction={() => setStep('faction_select')}
             onEnterBattle={() => setStep('battle_transition')}
+            onOpenAdvisorCouncil={() => setStep('advisor_council')}
+            onOpenMarketplace={() => setStep('marketplace')}
             onPlayDrum={playDrum}
             onPlayGong={playGong}
             onPlaySword={playSwordShink}
           />
         )}
 
-        {step === 'battle_transition' && player && (
+        {step === 'advisor_council' && effectivePlayer && (
+          <AdvisorCouncil
+            player={effectivePlayer}
+            faction={selectedFaction}
+            onBack={() => setStep(effectivePlayer.faction_id ? 'lobby' : 'splash')}
+            onOpenMarketplace={() => setStep('marketplace')}
+            onPlayDrum={playDrum}
+            onPlaySword={playSwordShink}
+          />
+        )}
+
+        {step === 'marketplace' && (
+          <AdvisorMarketplace
+            player={effectivePlayer ?? undefined}
+            onBack={() => setStep(effectivePlayer?.faction_id ? 'lobby' : 'advisor_council')}
+            onOpenWalletModal={() => setIsWalletModalOpen(true)}
+            onPlayDrum={playDrum}
+            onPlaySword={playSwordShink}
+          />
+        )}
+
+        {step === 'battle_transition' && effectivePlayer && (
           <BattleTransition
-            player={player}
+            player={effectivePlayer}
             faction={selectedFaction}
             onReturnToLobby={() => setStep('lobby')}
             onEnterCampaign={() => setStep('campaign_map')}
@@ -151,9 +206,9 @@ export const App: React.FC = () => {
           />
         )}
 
-        {step === 'campaign_map' && player && (
+        {step === 'campaign_map' && effectivePlayer && (
           <CampaignMap
-            player={player}
+            player={effectivePlayer}
             faction={selectedFaction}
             resources={resources}
             onDeploy={(location) => {
@@ -166,9 +221,9 @@ export const App: React.FC = () => {
           />
         )}
 
-        {step === 'battle' && player && selectedLocation && (
+        {step === 'battle' && effectivePlayer && selectedLocation && (
           <BattleScreen
-            player={player}
+            player={effectivePlayer}
             faction={selectedFaction}
             location={selectedLocation}
             onExitBattle={() => setStep('campaign_map')}
@@ -195,14 +250,13 @@ export const App: React.FC = () => {
       <footer className="w-full border-t border-imperial-border/60 bg-imperial-lacquer/80 backdrop-blur-sm py-4 px-4 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            <span className="font-cinzel text-imperial-lightgold font-bold">Vietnam History GameFi</span> &bull; Bản quyền Lịch sử &bull; Chuẩn kiến trúc FPD MVP
+            <span className="font-cinzel text-imperial-lightgold font-bold">Hào Khí Đại Việt</span>
+            {' '}— Lịch sử là Trò chơi. Blockchain là Thị trường.
           </div>
           <div className="flex items-center space-x-4 text-[11px] text-slate-400">
-            <span>Sui Move &amp; Solana Anchor</span>
+            <span>Gameplay • Chiến thuật • Lịch sử</span>
             <span>&bull;</span>
-            <span>FastAPI Monolith</span>
-            <span>&bull;</span>
-            <span>Off-Chain Battle Engine</span>
+            <span>Tướng Cố Vấn • Chợ On-Chain</span>
           </div>
         </div>
       </footer>

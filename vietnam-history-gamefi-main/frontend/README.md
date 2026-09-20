@@ -1,6 +1,6 @@
-# Frontend Khởi Động Trước Khi Vào Game - Vietnam History GameFi MVP
+# Frontend — Hào Khí Đại Việt (Game + DeFi)
 
-Giao diện khởi động tiền-trận đấu (Pre-Game Launcher & Onboarding) cho dự án **Vietnam History GameFi MVP**, được thiết kế bám sát 100% tài liệu kiến trúc **FPD (PDF)** và domain model của repository.
+Giao diện onboarding ví, Faction NFT, chiến dịch, và **Kinh tế on-chain**: thanh toán, tiết kiệm, lending, DEX, treasury, DAO tooling. Hướng thiết kế: minh bạch, an toàn (không custody), dễ tiếp cận.
 
 ---
 
@@ -42,6 +42,11 @@ Giao diện khởi động tiền-trận đấu (Pre-Game Launcher & Onboarding)
   - Xem trước các chiến dịch lịch sử: *Chiến dịch Bạch Đằng Giang*, *Phá vây Rạch Gầm - Xoài Mút*.
   - Nút chuyển đổi phe triều đại linh hoạt.
   - Nút **"XUẤT QUÂN VÀO CHIẾN TRƯỜNG"**: Kích hoạt đếm ngược xuất trận và chuyển cảnh sang Gameplay Engine.
+  - Nút **"Mở kinh tế on-chain (DeFi)"**: Sáu module tài chính (prototype UI, chứng từ mô phỏng cho đến khi nối adapter).
+
+### 1.5 Kinh tế on-chain (`DefiHub`)
+- Thanh toán, két tiết kiệm, lending (health factor), DEX (giá/phí/slippage), treasury công khai, DAO (đề xuất + quorum).
+- Header hiện lối vào **Kinh tế on-chain** khi đã kết nối ví.
 
 ---
 
@@ -82,6 +87,10 @@ frontend/
             ├── FactionSelection.tsx# Bàn cờ chiêu mộ tộc hệ & đúc kim ấn
             ├── PreGameLobby.tsx    # Sảnh tiền trạm duyệt quân trước xuất kích
             └── BattleTransition.tsx# Chuyển cảnh tiến vào trận địa chiến thuật
+        ├── Campaign/
+        ├── Battle/
+        └── Defi/
+            └── DefiHub.tsx         # Sáu module DeFi (thanh toán → DAO)
 ```
 
 ---
